@@ -5,7 +5,7 @@ PKG = emacsql-libsqlite3
 ELS   = $(PKG).el
 ELCS  = $(ELS:.el=.elc)
 
-DEPS  = notmuch/emacs
+DEPS  = emacsql
 
 EMACS      ?= emacs
 EMACS_ARGS ?=
