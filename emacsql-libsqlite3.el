@@ -69,8 +69,12 @@
       (emacsql-enable-debugging connection))
     connection))
 
+(cl-defmethod emacsql-live-p ((connection emacsql-libsqlite3-connection))
+  (and (oref connection handle) t))
+
 (cl-defmethod emacsql-close ((connection emacsql-libsqlite3-connection))
-  (sqlite3-close (oref connection handle)))
+  (sqlite3-close (oref connection handle))
+  (oset connection handle nil))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-libsqlite3-connection)
                                     message)
