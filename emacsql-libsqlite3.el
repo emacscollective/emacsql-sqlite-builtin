@@ -50,7 +50,7 @@
                       (object "TEXT")
                       (nil nil)))
    (handle :documentation "Database handle.")
-   (value :document "(internal) Value of last query."))
+   (value :documentation "(internal) Value of last query."))
   (:documentation "A connection to a SQLite database using a module."))
 
 (cl-defmethod initialize-instance :after
