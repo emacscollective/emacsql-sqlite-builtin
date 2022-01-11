@@ -1,11 +1,11 @@
 ;;; emacsql-libsqlite3.el --- EmacSQL back-end for SQLite using a module  -*- lexical-binding: t -*-
 
-;; Copyright (C) 2021 Jonas Bernoulli
+;; Copyright (C) 2021-2022 Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://github.com/emacscollective/emacsql-libsqlite3
 ;; Keywords: mail
-;; Package-Requires: ((emacs "25.1") (emacsql "3.0.0") (emacsql-sqlite "3.0.0") (sqlite "0"))
+;; Package-Requires: ((emacs "25.1") (emacsql "3.0.0") (emacsql-sqlite "3.0.0") (sqlite3 "0"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software: you can redistribute it and/or modify
