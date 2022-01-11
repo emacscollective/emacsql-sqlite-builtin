@@ -67,6 +67,11 @@
   (emacsql-register connection))
 
 (cl-defun emacsql-libsqlite3 (file &key debug)
+  "Open a connected to database stored in FILE.
+If FILE is nil use an in-memory database.
+
+:debug LOG -- When non-nil, log all SQLite commands to a log
+buffer. This is for debugging purposes."
   (let ((connection (make-instance 'emacsql-libsqlite3-connection :file file)))
     (when debug
       (emacsql-enable-debugging connection))
