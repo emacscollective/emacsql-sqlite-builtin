@@ -49,12 +49,15 @@
                       (float "REAL")
                       (object "TEXT")
                       (nil nil)))
-   (handle :documentation "Database handle."))
+   ;; Cannot use `process' slot because we cannot completely
+   ;; change the type of a slot, just make it more specific.
+   (handle :documentation "Database handle."
+           :accessor emacsql-process))
   (:documentation "A connection to a SQLite database using a module."))
 
 (cl-defmethod initialize-instance :after
   ((connection emacsql-libsqlite3-connection) &rest _)
-  (oset connection handle
+  (setf (emacsql-process connection)
         (sqlite3-open (or (slot-value connection 'file) ":memory:")
                       sqlite-open-readwrite
                       sqlite-open-create))
@@ -70,17 +73,17 @@
     connection))
 
 (cl-defmethod emacsql-live-p ((connection emacsql-libsqlite3-connection))
-  (and (oref connection handle) t))
+  (and (emacsql-process connection) t))
 
 (cl-defmethod emacsql-close ((connection emacsql-libsqlite3-connection))
-  (sqlite3-close (oref connection handle))
-  (oset connection handle nil))
+  (sqlite3-close (emacsql-process connection))
+  (setf (emacsql-process connection) nil))
 
 (cl-defmethod emacsql-send-message ((connection emacsql-libsqlite3-connection)
                                     message)
   (let (rows)
     (condition-case err
-        (sqlite3-exec (oref connection handle)
+        (sqlite3-exec (emacsql-process connection)
                       message
                       (lambda (_ row _)
                         (push (mapcar (lambda (col)
