@@ -59,8 +59,9 @@
         (sqlite3-open (or (slot-value connection 'file) ":memory:")
                       sqlite-open-readwrite
                       sqlite-open-create))
-  (emacsql connection [:pragma (= busy-timeout $s1)]
-           (/ (* emacsql-global-timeout 1000) 2))
+  (when emacsql-global-timeout
+    (emacsql connection [:pragma (= busy-timeout $s1)]
+             (/ (* emacsql-global-timeout 1000) 2)))
   (emacsql-register connection))
 
 (cl-defun emacsql-libsqlite3 (file &key debug)
