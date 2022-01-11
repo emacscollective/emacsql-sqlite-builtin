@@ -49,8 +49,7 @@
                       (float "REAL")
                       (object "TEXT")
                       (nil nil)))
-   (handle :documentation "Database handle.")
-   (value :documentation "(internal) Value of last query."))
+   (handle :documentation "Database handle."))
   (:documentation "A connection to a SQLite database using a module."))
 
 (cl-defmethod initialize-instance :after
@@ -98,14 +97,10 @@
                  (list msg code sym))))
       (error
        (signal 'emacsql-error err)))
-    ;; Pass value to `emacsql-parse'.
-    (oset connection value (nreverse rows))))
+    (nreverse rows)))
 
-;; Needed because `emacsql' isn't a generic function.
-(cl-defmethod emacsql-parse ((connection emacsql-libsqlite3-connection))
-  (oref connection value))
-(cl-defmethod emacsql-clear ((_connection emacsql-libsqlite3-connection))) ;noop
-(cl-defmethod emacsql-wait ((_connection emacsql-libsqlite3-connection))) ;noop
+(cl-defmethod emacsql ((connection emacsql-libsqlite3-connection) sql &rest args)
+  (emacsql-send-message connection (apply #'emacsql-compile connection sql args)))
 
 ;;; _
 (provide 'emacsql-libsqlite3)
