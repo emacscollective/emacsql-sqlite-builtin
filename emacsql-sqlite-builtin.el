@@ -1,11 +1,11 @@
-;;; emacsql-sqlite-module.el --- EmacSQL back-end for SQLite using a module  -*- lexical-binding: t; -*-
+;;; emacsql-sqlite-builtin.el --- EmacSQL back-end for SQLite using builtin support  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021-2022 Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://github.com/emacscollective/emacsql-sqlite-builtin
 ;; Keywords: data
-;; Package-Requires: ((emacs "25") (emacsql "3.0.0") (emacsql-sqlite "3.0.0") (sqlite3 "0.15"))
+;; Package-Requires: ((emacs "29") (emacsql "3.0.0") (emacsql-sqlite "3.0.0"))
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software: you can redistribute it and/or modify
@@ -23,23 +23,17 @@
 
 ;;; Commentary:
 
-;; An alternative EmacsSQL back-end for SQLite, which uses an Emacs
-;; module that exposes parts of the SQLite C API to elisp, instead of
-;; using subprocess as `emacsql-sqlite' does.  The module is provided
-;; by the `sqlite3' package.
-
-;; The goal is to provide a more performant and resilient drop-in
-;; replacement for `emacsql-sqlite'.  Taking full advantage of the
-;; granular module functions currently isn't a goal.
+;; An alternative EmacsSQL back-end for SQLite, which uses the builtin
+;; support added in Emacs 29.
 
 ;;; Code:
 
-(require 'sqlite3)
+(require 'sqlite)
 (require 'emacsql)
 ;; For `emacsql-sqlite-reserved' and `emacsql-sqlite-condition-alist'.
 (require 'emacsql-sqlite)
 
-(defclass emacsql-sqlite-module-connection (emacsql-connection)
+(defclass emacsql-sqlite-builtin-connection (emacsql-connection)
   ((file :initarg :file
          :type (or null string)
          :documentation "Database file name.")
@@ -53,67 +47,63 @@
    ;; change the type of a slot, just make it more specific.
    (handle :documentation "Database handle."
            :accessor emacsql-process))
-  (:documentation "A connection to a SQLite database using a module."))
+  (:documentation "A connection to a SQLite database using builtin support."))
 
 (cl-defmethod initialize-instance :after
-  ((connection emacsql-sqlite-module-connection) &rest _)
+  ((connection emacsql-sqlite-builtin-connection) &rest _)
   (setf (emacsql-process connection)
-        (sqlite3-open (or (slot-value connection 'file) ":memory:")
-                      sqlite-open-readwrite
-                      sqlite-open-create))
+        (sqlite-open (slot-value connection 'file)))
   (when emacsql-global-timeout
     (emacsql connection [:pragma (= busy-timeout $s1)]
              (/ (* emacsql-global-timeout 1000) 2)))
   (emacsql-register connection))
 
-(cl-defun emacsql-sqlite-module (file &key debug)
+(cl-defun emacsql-sqlite-builtin (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
-  (let ((connection (make-instance #'emacsql-sqlite-module-connection
+  (let ((connection (make-instance #'emacsql-sqlite-builtin-connection
                                    :file file)))
     (when debug
       (emacsql-enable-debugging connection))
     connection))
 
-(cl-defmethod emacsql-live-p ((connection emacsql-sqlite-module-connection))
+(cl-defmethod emacsql-live-p ((connection emacsql-sqlite-builtin-connection))
   (and (emacsql-process connection) t))
 
-(cl-defmethod emacsql-close ((connection emacsql-sqlite-module-connection))
-  (sqlite3-close (emacsql-process connection))
+(cl-defmethod emacsql-close ((connection emacsql-sqlite-builtin-connection))
+  (sqlite-close (emacsql-process connection))
   (setf (emacsql-process connection) nil))
 
 (cl-defmethod emacsql-send-message
-  ((connection emacsql-sqlite-module-connection) message)
-  (let (rows)
-    (condition-case err
-        (sqlite3-exec (emacsql-process connection)
-                      message
-                      (lambda (_ row _)
-                        (push (mapcar (lambda (col)
-                                        (cond ((null col) nil)
-                                              ((equal col "") "")
-                                              (t (read col))))
-                                      row)
-                              rows)))
-      ((db-error sql-error)
-       (pcase-let ((`(,sym ,msg ,code) err))
-         (signal (or (cadr (cl-assoc code emacsql-sqlite-condition-alist
-                                     :test #'memql))
-                     'emacsql-error)
-                 (list msg code sym))))
-      (error
-       (signal 'emacsql-error err)))
-    (nreverse rows)))
+  ((connection emacsql-sqlite-builtin-connection) message)
+  (condition-case err
+      (mapcar (lambda (row)
+                (mapcar (lambda (col)
+                          (cond ((null col) nil)
+                                ((equal col "") "")
+                                ((numberp col) col)
+                                (t (read col))))
+                        row))
+              (sqlite-select (emacsql-process connection) message nil nil))
+    ((db-error sql-error)
+     (pcase-let ((`(,sym ,msg ,code) err))
+       (signal (or (cadr (cl-assoc code emacsql-sqlite-condition-alist
+                                   :test #'memql))
+                   'emacsql-error)
+               (list msg code sym))))
+    (error
+     (signal 'emacsql-error err))))
 
-(cl-defmethod emacsql ((connection emacsql-sqlite-module-connection) sql &rest args)
+(cl-defmethod emacsql ((connection emacsql-sqlite-builtin-connection) sql &rest args)
   (emacsql-send-message connection (apply #'emacsql-compile connection sql args)))
 
 ;;; _
-(provide 'emacsql-sqlite-module)
+(provide 'emacsql-sqlite-builtin)
 ;; Local Variables:
 ;; indent-tabs-mode: nil
+;; byte-compile-warnings: (not docstrings)
 ;; End:
-;;; emacsql-sqlite-module.el ends here
+;;; emacsql-sqlite-builtin.el ends here

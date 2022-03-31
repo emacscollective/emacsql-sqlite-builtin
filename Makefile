@@ -1,11 +1,13 @@
 -include .config.mk
 
-PKG = emacsql-sqlite-module
+PKG = emacsql-sqlite-builtin
 
 ELS   = $(PKG).el
+ELS  += emacsql-sqlite-module.el
 ELCS  = $(ELS:.el=.elc)
 
 DEPS  = emacsql
+DEPS += sqlite3
 
 EMACS      ?= emacs
 EMACS_ARGS ?=

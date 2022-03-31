@@ -1,8 +1,8 @@
-An alternative [[https://github.com/skeeto/emacsql][EmacsSQL]] back-end for [[https://sqlite.org][SQLite]], which uses an Emacs
-module that exposes parts of the SQLite C API to elisp, instead of
-using subprocess as ~emacsql-sqlite~ does.  The module is provided
-by the [[https://github.com/pekingduck/emacs-sqlite3-api][sqlite3]] package.
+This repository contains two libraries implementing [[https://github.com/skeeto/emacsql][EmacsSQL]] backend
+for [[https://sqlite.org][SQLite]].  They are distributed as two separate packages on Melpa.
 
-The goal is to provide a more performant and resilient drop-in
-replacement for ~emacsql-sqlite~.  Taking full advantage of the
-granular module functions currently isn't a goal.
+- ~emacsql-sqlite-builtin~ uses builtin support for SQLite, which was
+  added in Emacs 29.
+
+- ~emacsql-sqlite-module~ uses an Emacs module for SQLite, which is
+  provided by the [[https://github.com/pekingduck/emacs-sqlite3-api][sqlite3]] package.
