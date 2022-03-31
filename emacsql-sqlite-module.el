@@ -1,4 +1,4 @@
-;;; emacsql-libsqlite3.el --- EmacSQL back-end for SQLite using a module  -*- lexical-binding: t -*-
+;;; emacsql-sqlite-module.el --- EmacSQL back-end for SQLite using a module  -*- lexical-binding: t; -*-
 
 ;; Copyright (C) 2021-2022 Jonas Bernoulli
 
@@ -39,7 +39,7 @@
 ;; For `emacsql-sqlite-reserved' and `emacsql-sqlite-condition-alist'.
 (require 'emacsql-sqlite)
 
-(defclass emacsql-libsqlite3-connection (emacsql-connection)
+(defclass emacsql-sqlite-module-connection (emacsql-connection)
   ((file :initarg :file
          :type (or null string)
          :documentation "Database file name.")
@@ -56,7 +56,7 @@
   (:documentation "A connection to a SQLite database using a module."))
 
 (cl-defmethod initialize-instance :after
-  ((connection emacsql-libsqlite3-connection) &rest _)
+  ((connection emacsql-sqlite-module-connection) &rest _)
   (setf (emacsql-process connection)
         (sqlite3-open (or (slot-value connection 'file) ":memory:")
                       sqlite-open-readwrite
@@ -66,26 +66,27 @@
              (/ (* emacsql-global-timeout 1000) 2)))
   (emacsql-register connection))
 
-(cl-defun emacsql-libsqlite3 (file &key debug)
+(cl-defun emacsql-sqlite-module (file &key debug)
   "Open a connected to database stored in FILE.
 If FILE is nil use an in-memory database.
 
 :debug LOG -- When non-nil, log all SQLite commands to a log
 buffer. This is for debugging purposes."
-  (let ((connection (make-instance 'emacsql-libsqlite3-connection :file file)))
+  (let ((connection (make-instance #'emacsql-sqlite-module-connection
+                                   :file file)))
     (when debug
       (emacsql-enable-debugging connection))
     connection))
 
-(cl-defmethod emacsql-live-p ((connection emacsql-libsqlite3-connection))
+(cl-defmethod emacsql-live-p ((connection emacsql-sqlite-module-connection))
   (and (emacsql-process connection) t))
 
-(cl-defmethod emacsql-close ((connection emacsql-libsqlite3-connection))
+(cl-defmethod emacsql-close ((connection emacsql-sqlite-module-connection))
   (sqlite3-close (emacsql-process connection))
   (setf (emacsql-process connection) nil))
 
-(cl-defmethod emacsql-send-message ((connection emacsql-libsqlite3-connection)
-                                    message)
+(cl-defmethod emacsql-send-message
+  ((connection emacsql-sqlite-module-connection) message)
   (let (rows)
     (condition-case err
         (sqlite3-exec (emacsql-process connection)
@@ -107,12 +108,12 @@ buffer. This is for debugging purposes."
        (signal 'emacsql-error err)))
     (nreverse rows)))
 
-(cl-defmethod emacsql ((connection emacsql-libsqlite3-connection) sql &rest args)
+(cl-defmethod emacsql ((connection emacsql-sqlite-module-connection) sql &rest args)
   (emacsql-send-message connection (apply #'emacsql-compile connection sql args)))
 
 ;;; _
-(provide 'emacsql-libsqlite3)
+(provide 'emacsql-sqlite-module)
 ;; Local Variables:
 ;; indent-tabs-mode: nil
 ;; End:
-;;; emacsql-libsqlite3.el ends here
+;;; emacsql-sqlite-module.el ends here

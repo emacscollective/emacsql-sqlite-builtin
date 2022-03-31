@@ -1,6 +1,6 @@
 -include .config.mk
 
-PKG = emacsql-libsqlite3
+PKG = emacsql-sqlite-module
 
 ELS   = $(PKG).el
 ELCS  = $(ELS:.el=.elc)
