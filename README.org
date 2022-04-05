@@ -1,4 +1,4 @@
-This repository contains two libraries implementing [[https://github.com/skeeto/emacsql][EmacsSQL]] backend
+This repository contains two libraries implementing [[https://github.com/skeeto/emacsql][EmacsSQL]] backends
 for [[https://sqlite.org][SQLite]].  They are distributed as two separate packages on Melpa.
 
 - ~emacsql-sqlite-builtin~ uses builtin support for SQLite, which was
