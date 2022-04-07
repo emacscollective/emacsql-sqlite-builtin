@@ -91,7 +91,7 @@ buffer. This is for debugging purposes."
     (condition-case err
         (sqlite3-exec (emacsql-process connection)
                       message
-                      (lambda (_ row _)
+                      (lambda (_ row __)
                         (push (mapcar (lambda (col)
                                         (cond ((null col) nil)
                                               ((equal col "") "")
