@@ -2,8 +2,8 @@
 
 PKG = emacsql-sqlite-builtin
 
-ELS   = $(PKG).el
-ELS  += emacsql-sqlite-module.el
+ELS   = emacsql-sqlite-module.el
+ELS  += $(PKG).el
 ELCS  = $(ELS:.el=.elc)
 
 DEPS  = emacsql
