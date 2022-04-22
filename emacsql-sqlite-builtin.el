@@ -1,11 +1,16 @@
-;;; emacsql-sqlite-builtin.el --- EmacSQL back-end for SQLite using builtin support  -*- lexical-binding: t; -*-
+;;; emacsql-sqlite-builtin.el --- EmacSQL back-end for SQLite using builtin support  -*- lexical-binding:t -*-
 
 ;; Copyright (C) 2021-2022 Jonas Bernoulli
 
 ;; Author: Jonas Bernoulli <jonas@bernoul.li>
 ;; Homepage: https://github.com/emacscollective/emacsql-sqlite-builtin
 ;; Keywords: data
-;; Package-Requires: ((emacs "29") (emacsql "3.0.0") (emacsql-sqlite "3.0.0"))
+
+;; Package-Requires: (
+;;     (emacs "29")
+;;     (emacsql "3.0.0")
+;;     (emacsql-sqlite "3.0.0"))
+
 ;; SPDX-License-Identifier: GPL-3.0-or-later
 
 ;; This file is free software: you can redistribute it and/or modify
